@@ -24,9 +24,13 @@ function Login() {
 
         // Store user data in local storage
         localStorage.setItem('userId', userData.user.id);
+        localStorage.setItem('userEmail', formData.email); // Store the email
         localStorage.setItem('username', userData.user.name);
-
-        navigate('/create-order');
+        if (formData.email.includes('@courier.com')) {
+          navigate('/CourierOrders');
+        } else {
+          navigate('/create-order');
+        }
       } else {
         const errorData = await response.json();
         setErrorMessage(errorData.message || 'Email or password does not match');

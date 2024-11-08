@@ -247,6 +247,25 @@ const deleteOrder = (request, response) => {
   });
 };
 
+const updateOrderStatus = (request, response) => {
+  const orderId = parseInt(request.params.id);
+
+  if (isNaN(orderId)) {
+    return response.status(400).json({ error: 'Invalid order ID' });
+  }
+
+  pool.query(
+    'UPDATE orders SET status = $1 WHERE id = $2',
+    ['Picked Up', orderId],
+    (error, results) => {
+      if (error) {
+        console.error("Database update error:", error);
+        return response.status(500).json({ error: 'Error updating order status' });
+      }
+      response.status(200).json({ message: 'Order status updated to Picked Up' });
+    }
+  );
+};
 
 
 // Uncomment if using CORS
@@ -265,4 +284,5 @@ module.exports = {
   validate_user,
   getUserOrders,
   deleteOrder,
+  updateOrderStatus,
 };
