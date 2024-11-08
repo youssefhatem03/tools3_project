@@ -38,6 +38,7 @@ app.post('/create-order', db.createOrder);
 app.get('/orders', db.getOrders);
 app.get('/user-orders/:userId', db.getUserOrders);
 app.delete('/orders/:id', db.deleteOrder);
+app.put('/orders/:id/pickup', db.updateOrderStatus);
 
 // Backend example: /verifyUser endpoint
 // app.get('/verifyUser', (req, res) => {
