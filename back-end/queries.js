@@ -267,10 +267,150 @@ const updateOrderStatus = (request, response) => {
   );
 };
 
+// Create a new courier with hashed password
+const createCourier = async (request, response) => {
+  const { name, email, password, phone } = request.body; // Include phone in the destructuring
 
-// Uncomment if using CORS
-// const cors = require('cors');
-// app.use(cors());
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    pool.query(
+      'INSERT INTO couriers (name, email, password, phone) VALUES ($1, $2, $3, $4) RETURNING id',
+      [name, email, hashedPassword, phone], // Pass phone as the third parameter
+      (error, results) => {
+        if (error) {
+          console.error("Database insert error:", error);
+          return response.status(500).json({ error: 'Error creating courier' });
+        }
+        response.status(201).json({
+          message: 'Courier created successfully',
+          courierId: results.rows[0].id,
+        });
+      }
+    );
+  } catch (error) {
+    console.error("Hashing error:", error);
+    response.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const getCouriers = (request, response) => {
+  pool.query('SELECT * FROM couriers ORDER BY id ASC', (error, results) => {
+    if (error) {
+      console.error("Database fetch error:", error);
+      return response.status(500).json({
+        error: 'Error fetching orders'
+      });
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
+
+
+
+// Create a new Admin with hashed password
+const createAdmin = async (request, response) => {
+  const { name, email, password } = request.body;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    pool.query(
+      'INSERT INTO admins (name, email, password) VALUES ($1, $2, $3) RETURNING id',
+      [name, email, hashedPassword],
+      (error, results) => {
+        if (error) {
+          console.error("Database insert error:", error);
+          return response.status(500).json({ error: 'Error creating courier' });
+        }
+        response.status(201).json({
+          message: 'Admin created successfully',
+          courierId: results.rows[0].id,
+        });
+      }
+    );
+  } catch (error) {
+    console.error("Hashing error:", error);
+    response.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+const getAdmins = (request, response) => {
+  pool.query('SELECT * FROM admins ORDER BY id ASC', (error, results) => {
+    if (error) {
+      console.error("Database fetch error:", error);
+      return response.status(500).json({
+        error: 'Error fetching orders'
+      });
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
+
+const validate_admin = async (req, res) => {
+  const adminId = parseInt(req.body.adminId); // Ensure adminId is an integer
+
+  if (isNaN(adminId)) {
+    return res.status(400).json({ message: 'Invalid admin ID' });
+  }
+
+  try {
+    const result = await pool.query('SELECT * FROM admins WHERE id = $1', [adminId]);
+    if (result.rows.length > 0) {
+      return res.status(200).json({ valid: true });
+    } else {
+      return res.status(404).json({ valid: false });
+    }
+  } catch (error) {
+    console.error('Error validating admin:', error.stack); // Log the full error stack
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const loginAdmin = async (request, response) => {
+  const {
+    email,
+    password
+  } = request.body;
+
+  pool.query(
+    'SELECT * FROM admins WHERE email = $1',
+    [email],
+    async (error, results) => {
+      if (error) {
+        return response.status(500).json({
+          error: 'Database error'
+        });
+      }
+      if (results.rows.length > 0) {
+        const admin = results.rows[0];
+        const isMatch = await bcrypt.compare(password, admin.password);
+        if (isMatch) {
+          response.status(200).json({
+            message: 'Login successful',
+            admin: {
+              id: admin.id,
+              name: admin.name,
+            },
+          });
+        } else {
+          response.status(401).json({
+            message: 'Invalid credentials'
+          });
+        }
+      } else {
+        response.status(401).json({
+          message: 'Invalid credentials'
+        });
+      }
+    }
+  );
+};
+
+
 
 module.exports = {
   getUsers,
@@ -285,4 +425,10 @@ module.exports = {
   getUserOrders,
   deleteOrder,
   updateOrderStatus,
+  createCourier,
+  getCouriers,
+  createAdmin,
+  getAdmins,
+  validate_admin,
+  loginAdmin,
 };

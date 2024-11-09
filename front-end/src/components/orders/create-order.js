@@ -14,8 +14,9 @@ function Order() {
   useEffect(() => {
     const userId = localStorage.getItem('userId');
     const username = localStorage.getItem('username');
+    const usereamil = localStorage.getItem('userEmail');
   
-    if (!userId || !username) {
+    if (!userId || !username || !usereamil) {
       alert('Please log in first');
       navigate('/login');
     } else {
