@@ -7,37 +7,44 @@ function OrderManagement() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userId = localStorage.getItem('userId');
-    const username = localStorage.getItem('username');
-    const usereamil = localStorage.getItem('userEmail');
-  
-    if (!userId || !username || !usereamil) {
-      alert('Please log in first');
-      navigate('/login');
+    const userEmail = localStorage.getItem('userEmail');
+
+    // Validate if the user email belongs to an admin
+    if (userEmail) {
+      validateAdmin(userEmail);
     } else {
-      // const validateUser = async () => {
-      //   try {
-      //     const response = await fetch('http://localhost:3000/validate-user', {
-      //       method: 'POST',
-      //       headers: {
-      //         'Content-Type': 'application/json',
-      //       },
-      //       body: JSON.stringify({ userId }),
-      //     });
-      //     const data = await response.json();
-      //     if (!data.valid) {
-      //       alert('User validation failed. Please log in again.');
-      //       navigate('/login');
-      //     }
-      //   } catch (error) {
-      //     console.error('Validation error:', error);
-      //     alert('An error occurred during validation. Please log in again.');
-      //     navigate('/login');
-      //   }
-      // };
-      fetchOrders();
+      alert('Please log in first');
+      navigate('/login-admin');
     }
   }, [navigate]);
+
+  // Validate if the email exists in the admins table
+  const validateAdmin = async (email) => {
+    try {
+      const response = await fetch('http://localhost:3000/validate-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      // If the email is not valid, redirect to login
+      if (!data.valid) {
+        alert('You are not authorized to access this page. Please log in as an admin.');
+        navigate('/login');
+      } else {
+        // Fetch orders only if the admin validation is successful
+        fetchOrders();
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
+      alert('An error occurred during validation. Please log in again.');
+      navigate('/login');
+    }
+  };
 
   // Fetch all orders from the backend
   const fetchOrders = async () => {

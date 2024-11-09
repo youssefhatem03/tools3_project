@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../Auth.css';
 
-function LoginAdmin() {
+function LoginCourier() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ function LoginAdmin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/login-admin', {
+      const response = await fetch('http://localhost:3000/login-courier', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -19,12 +19,12 @@ function LoginAdmin() {
       });
 
       if (response.ok) {
-        const adminData = await response.json();
-        localStorage.setItem('userId', adminData.courier.id); // Store admin ID
+        const courierData = await response.json();
+        localStorage.setItem('userId', courierData.admin.id); // Store admin ID
         localStorage.setItem('userEmail', formData.email);
-        localStorage.setItem('username', adminData.courier.name);
+        localStorage.setItem('username', courierData.admin.name);
 
-        navigate('/OrderManagement'); // Redirect to OrderManagement
+        navigate('/CourierOrders'); // Redirect to OrderManagement
       } else {
         const errorData = await response.json();
         setErrorMessage(errorData.message || 'Email or password does not match');
@@ -38,7 +38,7 @@ function LoginAdmin() {
   return (
     <div className="auth-wrapper d-flex justify-content-center align-items-center min-vh-100">
       <div className="auth-inner p-4 shadow rounded" style={{ maxWidth: '400px', width: '100%' }}>
-        <h2 className="text-center mb-4">Admin Login</h2>
+        <h2 className="text-center mb-4">Courier Login</h2>
 
         {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
 
@@ -72,4 +72,4 @@ function LoginAdmin() {
   );
 }
 
-export default LoginAdmin;
+export default LoginCourier;

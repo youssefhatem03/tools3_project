@@ -83,6 +83,14 @@ function Login() {
 
           <button type="submit" className="btn btn-primary btn-block w-100 mb-1">Login</button>
 
+          <Link to="/login-courier">
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-block w-100 mb-1"
+            >
+              Login as Courier
+            </button>
+          </Link>
           <Link to="/login-admin">
             <button
               type="button"
