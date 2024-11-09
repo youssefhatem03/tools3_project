@@ -46,10 +46,7 @@ function Login() {
   };
 
   // Function to clear local storage
-  const handleClearLocalStorage = () => {
-    localStorage.clear();
-    console.log("Local storage cleared");
-  };
+ 
 
   return (
     <div className="auth-wrapper d-flex justify-content-center align-items-center min-vh-100">
@@ -98,15 +95,7 @@ function Login() {
             >
               Login as Admin
             </button>
-          </Link>
-
-          <button
-            type="button"
-            onClick={handleClearLocalStorage}
-            className="btn btn-secondary btn-block w-100 mt-3"
-          >
-            Clear Local Storage
-          </button>
+          </Link> 
         </form>
 
         <p className="text-center mt-3">
