@@ -9,7 +9,7 @@ function Registration() {
     password: '',
   });
   const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // Define isLoading state
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -30,7 +30,12 @@ function Registration() {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/users', {
+      // Determine the endpoint based on the email domain
+      const endpoint = formData.email.endsWith('@admin.com')
+        ? 'http://localhost:3000/create-admin'
+        : 'http://localhost:3000/users';
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +52,7 @@ function Registration() {
     } catch (error) {
       setErrorMessage('Error: Unable to register. Please check your connection and try again.');
     } finally {
-      setIsLoading(false); // Stop loading indicator
+      setIsLoading(false);
     }
   };
 
@@ -65,7 +70,7 @@ function Registration() {
   };
 
   useEffect(() => {
-    testConnection(); // Test connection on component mount
+    testConnection();
   }, []);
 
   return (

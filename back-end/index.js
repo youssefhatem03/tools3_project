@@ -37,44 +37,16 @@ app.post('/login', db.loginUser);
 app.post('/create-order', db.createOrder);
 app.get('/orders', db.getOrders);
 app.get('/user-orders/:userId', db.getUserOrders);
-app.delete('/orders/:id', db.deleteOrder);
 app.put('/orders/:id/pickup', db.updateOrderStatus);
-
-// Backend example: /verifyUser endpoint
-// app.get('/verifyUser', (req, res) => {
-//   const userId = req.query.id; // Get user ID from the request
-
-//   pool.query('SELECT 1 FROM users WHERE id = $1', [userId], (error, results) => {
-//     if (error) {
-//       res.status(500).send('Database error');
-//     } else if (results.rows.length === 0) {
-//       res.status(404).json({ exists: false });
-//     } else {
-//       res.status(200).json({ exists: true });
-//     }
-//   });
-// });
-
-// Assuming you have a user model set up
-
-// app.post('/validate-user', async (req, res) => {
-//   const { userId } = req.body; // Get userId from request body
-
-//   try {
-//     const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
-//     if (result.rows.length > 0) {
-//       return res.status(200).json({ valid: true });
-//     } else {
-//       return res.status(404).json({ valid: false });
-//     }
-//   } catch (error) {
-//     console.error('Error validating user:', error); // Log the error
-//     return res.status(500).json({ message: 'Server error' });
-//   }
-// });
-
+app.delete('/orders/:id', db.deleteOrder);
 app.post('/validate-user' , db.validate_user);
 
+app.post('/crete-courier', db.createCourier);
+app.get('/couriers', db.getCouriers);
+
+app.post('/create-admin', db.createAdmin);
+app.get('/admins', db.getAdmins);
+app.post('/login-admin', db.loginAdmin);
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
