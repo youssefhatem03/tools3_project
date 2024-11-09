@@ -3,7 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
-const db = require('./queries');
+// const db = require('./queries');
+const user = require('./UserQueries');
+const courier = require('./CourierQueries');
+const admin = require('./AdminQueries');
+const order = require('./OrderQueries');
 const port = 3000;
 
 // Import and configure CORS
@@ -27,39 +31,40 @@ app.get('/', (request, response) => {
   });
 });
 
-app.get('/users', db.getUsers);
-app.get('/users/:id', db.getUserById);
-app.post('/users', db.createUser);
-app.put('/users/:id', db.updateUser);
-app.delete('/users/:id', db.deleteUser);
-app.post('/login', db.loginUser);
+// User Routes
+app.get('/users', user.getUsers);
+app.get('/users/:id', user.getUserById);
+app.post('/users', user.createUser);
+app.put('/users/:id', user.updateUser);
+app.delete('/users/:id', user.deleteUser);
+app.post('/login', user.loginUser);
+app.post('/validate-user' , user.validate_user);
 
 
-app.post('/create-order', db.createOrder);
-app.get('/orders', db.getOrders);
-app.get('/ordersWithCouriers', db.getOrdersWithCouriers);
-app.get('/user-orders/:userId', db.getUserOrders);
-app.put('/orders/:id/pickup', db.updateOrderStatus);
-app.delete('/orders/:id', db.deleteOrder);
-app.post('/validate-user' , db.validate_user);
+// Order Routes
+app.post('/create-order', order.createOrder);
+app.get('/orders', order.getOrders);
+app.get('/ordersWithCouriers', order.getOrdersWithCouriers);
+app.get('/user-orders/:userId', order.getUserOrders);
+app.put('/orders/:id/pickup', order.updateOrderStatus);
+app.delete('/orders/:id', order.deleteOrder);
 
 
-app.post('/create-courier', db.createCourier);
-app.post('/login-courier', db.loginCourier);
-app.post('/validate-courier', db.validate_courier);
-app.get('/couriers', db.getCouriers);
-app.put('/orders/:id/accept', db.assignCourierToOrder);
+// Courier Routes
+app.post('/create-courier', courier.createCourier);
+app.post('/login-courier', courier.loginCourier);
+app.post('/validate-courier', courier.validate_courier);
+app.get('/couriers', courier.getCouriers);
+app.get('/couriersNames', courier.getCouriersNames);
 
 
-app.post('/create-admin', db.createAdmin);
-app.post('/validate-admin', db.validate_admin);
-app.get('/admins', db.getAdmins);
-app.post('/login-admin', db.loginAdmin);
-// Route to fetch all couriers for reassignment
-app.get('/couriersNames', db.getCouriersNames);
-
-// Route to reassign a courier to an order
-app.put('/orders/:id/reassign', db.reassignCourierToOrder);
+// Admin Routes
+app.post('/create-admin', admin.createAdmin);
+app.post('/validate-admin', admin.validate_admin);
+app.get('/admins', admin.getAdmins);
+app.post('/login-admin', admin.loginAdmin);
+app.put('/orders/:id/accept', admin.assignCourierToOrder);
+app.put('/orders/:id/reassign', admin.reassignCourierToOrder);
 
 
 app.listen(3000, () => {

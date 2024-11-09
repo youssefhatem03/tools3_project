@@ -98,10 +98,25 @@ function OrderManagement() {
     }
   };
 
+  // Navigate to reassignOrders page
+  const handleReassignOrder = () => {
+    navigate('/reassignOrders');
+  };
+
   return (
     <div className="container">
       <h2 className="text-center my-4">Order Management</h2>
+      
+      {/* Reassign Order Button */}
+      <button
+        className="btn btn-warning mb-3"
+        onClick={handleReassignOrder}
+      >
+        Reassign Order
+      </button>
+
       {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+
       <table className="table table-bordered">
         <thead>
           <tr>
