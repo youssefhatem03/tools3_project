@@ -8,6 +8,8 @@ import CourierOrders from './components/courier/CourierOrders';
 import LoginAdmin from './components/admin/login-admin'; 
 import OrderManagement from './components/admin/OrderManagement'; 
 import ProtectedRoute from './components/Authentication/ProtectedRoute'; 
+import LoginCourier from './components/courier/login-courier'; 
+import AdminOrders from './components/admin/ReassignOrders'; 
 // import AuthGuard from './components/Authentication/AuthGuard'; 
 
 function App() {
@@ -21,8 +23,10 @@ function App() {
         <Route path="/create-order" element={<Order />} />
         <Route path="/user-orders" element={<UserOrders />} />
         <Route path="/CourierOrders" element={<CourierOrders />} />
-        <Route path="/OrderManagement" element={<OrderManagement />} />
+        <Route path="/login-courier" element={<LoginCourier />} />
         <Route path="/login-admin" element={<LoginAdmin />} />
+        <Route path="/OrderManagement" element={<OrderManagement />} />
+        <Route path="/reassignOrders" element={<AdminOrders />} />
         <Route
           path="/OrderManagement"
           element={

@@ -209,6 +209,21 @@ const getOrders = (request, response) => {
   });
 };
 
+const getOrdersWithCouriers = (request, response) => {
+  pool.query(
+    'SELECT orders.*, couriers.name AS Courier_Name FROM orders LEFT JOIN couriers ON orders.courier_id = couriers.id ORDER BY orders.id ASC',
+    (error, results) => {
+      if (error) {
+        console.error("Database fetch error:", error);
+        return response.status(500).json({
+          error: 'Error fetching orders'
+        });
+      }
+      response.status(200).json(results.rows);
+    }
+  );
+};
+
 
 const getUserOrders = (request, response) => {
   const userId = parseInt(request.params.userId);
@@ -306,6 +321,104 @@ const getCouriers = (request, response) => {
   });
 };
 
+// Endpoint to fetch all couriers
+const getCouriersNames = (request, response) => {
+  pool.query('SELECT id, name FROM couriers ORDER BY name ASC', (error, results) => {
+    if (error) {
+      console.error("Database fetch error:", error);
+      return response.status(500).json({
+        error: 'Error fetching couriers'
+      });
+    }
+    response.status(200).json(results.rows);  // returns an array of couriers with their IDs and names
+  });
+};
+
+
+
+
+const loginCourier = async (request, response) => {
+  const {
+    email,
+    password
+  } = request.body;
+
+  pool.query(
+    'SELECT * FROM couriers WHERE email = $1',
+    [email],
+    async (error, results) => {
+      if (error) {
+        return response.status(500).json({
+          error: 'Database error'
+        });
+      }
+      if (results.rows.length > 0) {
+        const admin = results.rows[0];
+        const isMatch = await bcrypt.compare(password, admin.password);
+        if (isMatch) {
+          response.status(200).json({
+            message: 'Login successful',
+            admin: {
+              id: admin.id,
+              name: admin.name,
+            },
+          });
+        } else {
+          response.status(401).json({
+            message: 'Invalid credentials'
+          });
+        }
+      } else {
+        response.status(401).json({
+          message: 'Invalid credentials'
+        });
+      }
+    }
+  );
+};
+
+// Update an order status and assign courier_id
+const assignCourierToOrder = (request, response) => {
+  const orderId = parseInt(request.params.id);
+  const { courier_id } = request.body; // Get courier_id from request body
+
+  if (isNaN(orderId) || isNaN(courier_id)) {
+    return response.status(400).json({ error: 'Invalid order ID or courier ID' });
+  }
+
+  pool.query(
+    'UPDATE orders SET status = $1, courier_id = $2 WHERE id = $3',
+    ['Picked Up', courier_id, orderId],
+    (error, results) => {
+      if (error) {
+        console.error("Database update error:", error);
+        return response.status(500).json({ error: 'Error updating order status' });
+      }
+      response.status(200).json({ message: 'Order accepted and courier assigned successfully' });
+    }
+  );
+};
+
+const validate_courier = async (req, res) => {
+  const email = req.body.email;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Invalid email' });
+  }
+
+  try {
+    const result = await pool.query('SELECT * FROM couriers WHERE email = $1', [email]);
+    if (result.rows.length > 0) {
+      return res.status(200).json({ valid: true });
+    } else {
+      return res.status(404).json({ valid: false });
+    }
+  } catch (error) {
+    console.error('Error validating courier:', error.stack);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
 
 
 
@@ -350,22 +463,23 @@ const getAdmins = (request, response) => {
 };
 
 
+// Backend endpoint to validate if an email is in the admins table
 const validate_admin = async (req, res) => {
-  const adminId = parseInt(req.body.adminId); // Ensure adminId is an integer
+  const email = req.body.email;
 
-  if (isNaN(adminId)) {
-    return res.status(400).json({ message: 'Invalid admin ID' });
+  if (!email) {
+    return res.status(400).json({ message: 'Invalid email' });
   }
 
   try {
-    const result = await pool.query('SELECT * FROM admins WHERE id = $1', [adminId]);
+    const result = await pool.query('SELECT * FROM admins WHERE email = $1', [email]);
     if (result.rows.length > 0) {
       return res.status(200).json({ valid: true });
     } else {
       return res.status(404).json({ valid: false });
     }
   } catch (error) {
-    console.error('Error validating admin:', error.stack); // Log the full error stack
+    console.error('Error validating admin:', error.stack);
     return res.status(500).json({ message: 'Server error' });
   }
 };
@@ -386,14 +500,14 @@ const loginAdmin = async (request, response) => {
         });
       }
       if (results.rows.length > 0) {
-        const admin = results.rows[0];
-        const isMatch = await bcrypt.compare(password, admin.password);
+        const courier = results.rows[0];
+        const isMatch = await bcrypt.compare(password, courier.password);
         if (isMatch) {
           response.status(200).json({
             message: 'Login successful',
-            admin: {
-              id: admin.id,
-              name: admin.name,
+            courier: {
+              id: courier.id,
+              name: courier.name,
             },
           });
         } else {
@@ -410,6 +524,29 @@ const loginAdmin = async (request, response) => {
   );
 };
 
+// Endpoint to reassign a courier to an order
+const reassignCourierToOrder = (request, response) => {
+  const orderId = parseInt(request.params.id);
+  const { courier_id } = request.body;
+
+  // Validation checks
+  if (isNaN(orderId) || isNaN(courier_id)) {
+    return response.status(400).json({ error: 'Invalid order ID or courier ID' });
+  }
+
+  pool.query(
+    'UPDATE orders SET courier_id = $1, status = $2 WHERE id = $3',
+    [courier_id, 'Reassigned', orderId],
+    (error, results) => {
+      if (error) {
+        console.error("Database update error:", error);
+        return response.status(500).json({ error: 'Error reassigning courier to order' });
+      }
+      response.status(200).json({ message: 'Courier reassigned successfully' });
+    }
+  );
+};
+
 
 
 module.exports = {
@@ -421,14 +558,20 @@ module.exports = {
   loginUser,
   createOrder,
   getOrders,
+  getOrdersWithCouriers,
   validate_user,
   getUserOrders,
   deleteOrder,
   updateOrderStatus,
   createCourier,
   getCouriers,
+  getCouriersNames,
+  validate_courier,
+  loginCourier,
+  assignCourierToOrder,
   createAdmin,
   getAdmins,
   validate_admin,
   loginAdmin,
+  reassignCourierToOrder,
 };

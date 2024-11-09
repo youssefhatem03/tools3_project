@@ -1,61 +1,105 @@
 import React, { useEffect, useState } from 'react';
 import { Alert } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import '../../css/user-orders.css';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function CourierOrders() {
   const [orders, setOrders] = useState([]);
   const [alertMessage, setAlertMessage] = useState('');
   const [declinedOrders, setDeclinedOrders] = useState([]);
-
-  // Load declined orders from localStorage on component mount
-  useEffect(() => {
-    const storedDeclinedOrders = JSON.parse(localStorage.getItem('declinedOrders')) || [];
-    setDeclinedOrders(storedDeclinedOrders);
-  }, []);
+  const navigate = useNavigate();
 
   // Fetch all orders on component mount
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/orders');
-        if (response.ok) {
-          const data = await response.json();
-          setOrders(data);
-        } else {
-          console.error('Failed to fetch orders');
-        }
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-      }
-    };
+    const userEmail = localStorage.getItem('userEmail');
 
-    fetchOrders();
-  }, []);
+    // Validate if the user email belongs to an admin
+    if (userEmail) {
+      validateCourier(userEmail);
+    } else {
+      alert('Please log in first');
+      navigate('/login');
+    }
+  }, [navigate]);
 
-  // Handle accept order: update status
-  const acceptOrder = async (orderId) => {
+  // Validate if the email exists in the admins table
+  const validateCourier = async (email) => {
     try {
-      const response = await fetch(`http://localhost:3000/orders/${orderId}/pickup`, {
-        method: 'PUT',
+      const response = await fetch('http://localhost:3000/validate-courier', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ email }),
       });
-  
-      if (response.ok) {
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.id === orderId ? { ...order, status: 'Picked Up' } : order
-          )
-        );
-        setAlertMessage('Order status updated to Picked Up.');
+
+      const data = await response.json();
+
+      // If the email is not valid, redirect to login
+      if (!data.valid) {
+        alert('You are not authorized to access this page. Please log in as a courier.');
+        navigate('/login-courier');
       } else {
-        console.error('Failed to update order status');
+        // Fetch orders only if the admin validation is successful
+        fetchOrders();
       }
     } catch (error) {
-      console.error('Error updating order status:', error);
+      console.error('Validation error:', error);
+      alert('An error occurred during validation. Please log in again.');
+      navigate('/login');
     }
   };
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/orders');
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data);
+      } else {
+        console.error('Failed to fetch orders');
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
+
+
+  // Handle accept order: update status
+  // Handle accept order: update status and assign courier
+const acceptOrder = async (orderId) => {
+  const courierId = localStorage.getItem('userId'); // Retrieve courierId from localStorage
+  if (!courierId) {
+    alert('Courier ID not found. Please log in again.');
+    navigate('/login-courier');
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:3000/orders/${orderId}/accept`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ courier_id: parseInt(courierId) }), // Send courier_id in the request body
+    });
+
+    if (response.ok) {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, status: 'Picked Up', courier_id: courierId } : order
+        )
+      );
+      setAlertMessage('Order accepted and courier assigned successfully.');
+    } else {
+      console.error('Failed to update order status');
+    }
+  } catch (error) {
+    console.error('Error updating order status:', error);
+  }
+};
 
   // Handle decline order: remove from view without deleting from backend
   const declineOrder = (orderId) => {

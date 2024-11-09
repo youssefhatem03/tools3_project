@@ -31,9 +31,14 @@ function Registration() {
     setIsLoading(true);
     try {
       // Determine the endpoint based on the email domain
-      const endpoint = formData.email.endsWith('@admin.com')
-        ? 'http://localhost:3000/create-admin'
-        : 'http://localhost:3000/users';
+      let endpoint;
+      if (formData.email.endsWith('@admin.com')) {
+        endpoint = 'http://localhost:3000/create-admin';
+      } else if (formData.email.endsWith('@courier.com')) {
+        endpoint = 'http://localhost:3000/create-courier';
+      } else {
+        endpoint = 'http://localhost:3000/users';
+      }
 
       const response = await fetch(endpoint, {
         method: 'POST',
