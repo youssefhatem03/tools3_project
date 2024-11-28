@@ -1,5 +1,5 @@
 const Pool = require('pg').Pool;
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',

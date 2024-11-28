@@ -1,8 +1,8 @@
 const Pool = require('pg').Pool;
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const pool = new Pool({
   user: 'postgres',
-  host: 'localhost',
+  host: 'db',
   database: 'API',
   password: '12345678',
   port: 5432,

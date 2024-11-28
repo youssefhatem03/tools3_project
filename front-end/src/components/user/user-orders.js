@@ -6,46 +6,76 @@ function UserOrders() {
   const [orders, setOrders] = useState([]);
   const navigate = useNavigate();
 
+  // Fetch user orders
   useEffect(() => {
     const userId = localStorage.getItem('userId');
-    if (!userId) {
+    const username = localStorage.getItem('username');
+    const userEmail = localStorage.getItem('userEmail');
+
+    if (!userId || !username || !userEmail) {
       alert('Please log in first');
       navigate('/login');
     } else {
-      const fetchUserOrders = async () => {
+      const validateUser = async () => {
         try {
-          const response = await fetch(`http://localhost:3000/user-orders/${userId}`);
-          if (response.ok) {
-            const data = await response.json();
-            setOrders(data);
+          const response = await fetch('http://localhost:3000/validate-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId }),
+          });
+          const data = await response.json();
+          if (!data.valid) {
+            alert('User validation failed. Please log in again.');
+            navigate('/login');
           } else {
-            console.error('Failed to fetch orders');
+            // Fetch user orders after successful validation
+            const fetchUserOrders = async () => {
+              try {
+                const response = await fetch(`http://localhost:3000/user-orders/${userId}`);
+                if (response.ok) {
+                  const data = await response.json();
+                  setOrders(data);
+                } else {
+                  console.error('Failed to fetch orders');
+                }
+              } catch (error) {
+                console.error('Error fetching orders:', error);
+              }
+            };
+            fetchUserOrders();
           }
         } catch (error) {
-          console.error('Error fetching orders:', error);
+          console.error('Validation error:', error);
+          alert('An error occurred during validation. Please log in again.');
+          navigate('/login');
         }
       };
-      fetchUserOrders();
+      validateUser();
     }
   }, [navigate]);
 
-  const cancelOrder = async (orderId) => {
-    if (window.confirm('Are you sure you want to cancel this order?')) {
-      try {
-        const response = await fetch(`http://localhost:3000/orders/${orderId}`, {
-          method: 'DELETE',
-        });
-        if (response.ok) {
-          alert('Order cancelled successfully');
-          setOrders(orders.filter((order) => order.id !== orderId));
+  // Cancel an order
+  function cancelOrder(orderId) {
+    fetch(`http://localhost:3000/CancelOrder/${orderId}`, {
+      method: 'DELETE',
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          alert(data.error);
         } else {
-          console.error('Failed to cancel order');
+          // Remove the cancelled order from the orders array
+          setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId));
+          alert(data.message);
         }
-      } catch (error) {
-        console.error('Error cancelling order:', error);
-      }
-    }
-  };
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('Something went wrong, please try again later.');
+      });
+  }
 
   return (
     <div className="container user-orders-container">

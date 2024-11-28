@@ -18,6 +18,15 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
 }));
 
+const bcrypt = require('bcryptjs');
+
+bcrypt.hash('password123', 10, function(err, hash) {
+    if (err) throw err;
+    console.log(hash);
+});
+
+
+
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -39,11 +48,14 @@ app.put('/users/:id', user.updateUser);
 app.delete('/users/:id', user.deleteUser);
 app.post('/login', user.loginUser);
 app.post('/validate-user' , user.validate_user);
+app.delete('/CancelOrder/:id' , user.CancelOrder);
 
 
 // Order Routes
 app.post('/create-order', order.createOrder);
 app.get('/orders', order.getOrders);
+app.get('/orders/pending', order.getPendingOrders);
+app.get('/orders/assigned/:courierId', order.getAssignedOrders);
 app.get('/ordersWithCouriers', order.getOrdersWithCouriers);
 app.get('/user-orders/:userId', order.getUserOrders);
 app.put('/orders/:id/pickup', order.updateOrderStatus);

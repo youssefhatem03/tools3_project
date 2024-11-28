@@ -1,8 +1,8 @@
 const Pool = require('pg').Pool;
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const pool = new Pool({
   user: 'postgres',
-  host: 'localhost',
+  host: 'db',
   database: 'API',
   password: '12345678',
   port: 5432,
@@ -163,6 +163,45 @@ const validate_user = async (req, res) => {
   }
 };
 
+const CancelOrder = (request, response) => {
+  const orderId = parseInt(request.params.id);
+  console.log("Received order ID:", orderId);  
+
+  if (isNaN(orderId)) {
+    return response.status(400).json({ error: 'Invalid order ID' });
+  }
+
+  // Check if the order's status is 'Picked Up'
+  pool.query('SELECT status FROM orders WHERE id = $1', [orderId], (error, results) => {
+    if (error) {
+      console.error("Database fetch error:", error);
+      return response.status(500).json({ error: 'Error fetching order' });
+    }
+
+    if (results.rows.length === 0) {
+      console.log("Order not found for ID:", orderId);  // Log when order is not found
+      return response.status(404).json({ error: 'Order not found' });
+    }
+    
+    const orderStatus = results.rows[0].status;
+    if (orderStatus === 'Picked Up') {
+      return response.status(400).json({ error: 'Sorry, the order has been picked up and cannot be cancelled' });
+    }
+
+    // If order status is not 'Picked Up', proceed to delete the order
+    pool.query('DELETE FROM orders WHERE id = $1', [orderId], (deleteError, deleteResults) => {
+      if (deleteError) {
+        console.error("Database delete error:", deleteError);
+        return response.status(500).json({ error: 'Error deleting order' });
+      }
+      response.status(200).json({ message: 'Order deleted successfully' });
+        });
+  });
+};
+
+
+
+
 module.exports = {
     getUsers,
     getUserById,
@@ -171,4 +210,5 @@ module.exports = {
     deleteUser,
     loginUser,
     validate_user,
+    CancelOrder,
   };
