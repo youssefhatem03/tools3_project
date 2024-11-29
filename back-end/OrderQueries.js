@@ -1,12 +1,5 @@
-const Pool = require('pg').Pool;
+const pool = require('./db'); // Adjust the path as necessary
 const bcrypt = require('bcryptjs');
-const pool = new Pool({
-  user: 'postgres',
-  host: 'db',
-  database: 'API',
-  password: '12345678',
-  port: 5432,
-});
 
 const createOrder = (request, response) => {
   const {

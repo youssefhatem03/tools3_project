@@ -1,12 +1,5 @@
-const Pool = require('pg').Pool;
+const pool = require('./db'); // Adjust the path as necessary
 const bcrypt = require('bcryptjs');
-const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'API',
-  password: '12345678',
-  port: 5432,
-});
 
 const createCourier = async (request, response) => {
     const { name, email, password, phone } = request.body; // Include phone in the destructuring
@@ -39,7 +32,7 @@ const createCourier = async (request, response) => {
       if (error) {
         console.error("Database fetch error:", error);
         return response.status(500).json({
-          error: 'Error fetching orders'
+          error: 'Error fetching Couriers'
         });
       }
       response.status(200).json(results.rows);
