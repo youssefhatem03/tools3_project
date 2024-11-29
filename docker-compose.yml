@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345678
+      POSTGRES_DB: API
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - shared_network
+
+  back-end:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_HOST=database  # Match the service name of the database container
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=12345678
+      - DATABASE_NAME=API
+    depends_on:
+      - database  # Reference the database container service name
+    networks:
+      - shared_network
+
+  front-end:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    ports:
+      - "3001:80"
+    depends_on:
+      - back-end
+    networks:
+      - shared_network
+
+volumes:
+  postgres_data:
+
+networks:
+  shared_network:

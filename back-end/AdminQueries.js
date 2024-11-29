@@ -1,12 +1,5 @@
-const Pool = require('pg').Pool;
-const bcrypt = require('bcrypt');
-const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'API',
-  password: '12345678',
-  port: 5432,
-});
+const pool = require('./db'); 
+const bcrypt = require('bcryptjs');
 
 const createAdmin = async (request, response) => {
     const { name, email, password } = request.body;
@@ -69,7 +62,7 @@ const createAdmin = async (request, response) => {
       if (error) {
         console.error("Database fetch error:", error);
         return response.status(500).json({
-          error: 'Error fetching orders'
+          error: 'Error fetching Admins'
         });
       }
       response.status(200).json(results.rows);

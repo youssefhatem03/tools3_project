@@ -4,6 +4,7 @@ import Login from './components/Login';
 import Order from './components/user/create-order'; 
 import UserOrders from './components/user/user-orders'; 
 import CourierOrders from './components/courier/CourierOrders'; 
+import MyOrdersCourier from './components/courier/myOrders-Courier';
 import LoginAdmin from './components/admin/login-admin'; 
 import OrderManagement from './components/admin/OrderManagement'; 
 import ProtectedRoute from './components/Authentication/ProtectedRoute'; 
@@ -27,6 +28,7 @@ function App() {
         <Route path="/create-order" element={<Order />} />
         <Route path="/user-orders" element={<UserOrders />} />
         <Route path="/CourierOrders" element={<CourierOrders />} />
+        <Route path="/myOrders-courier" element={<MyOrdersCourier />} />
         <Route path="/login-courier" element={<LoginCourier />} />
         <Route path="/login-admin" element={<LoginAdmin />} />
         <Route path="/OrderManagement" element={<OrderManagement />} />
